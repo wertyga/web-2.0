@@ -1,0 +1,19 @@
+@font-face {
+    font-family: "ImpactRegular";
+    src: url("../fonts/ImpactRegular/ImpactRegular.eot");
+    src: url("../fonts/ImpactRegular/ImpactRegular.eot?#iefix")format("embedded-opentype"),
+    url("../fonts/ImpactRegular/ImpactRegular.woff") format("woff"),
+    url("../fonts/ImpactRegular/ImpactRegular.ttf") format("truetype");
+    font-style: normal;
+    font-weight: normal;
+}
+
+@font-face {
+    font-family: "DroidSerif";
+    src: url("../fonts/DroidSerifRegular/DroidSerifRegular.eot");
+    src: url("../fonts/DroidSerifRegular/DroidSerifRegular.eot?#iefix")format("embedded-opentype"),
+    url("../fonts/DroidSerifRegular/DroidSerifRegular.woff") format("woff"),
+    url("../fonts/DroidSerifRegular/DroidSerifRegular.ttf") format("truetype");
+    font-style: normal;
+    font-weight: normal;
+}

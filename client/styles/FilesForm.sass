@@ -1,0 +1,40 @@
+#FilesForm
+  width: 100%
+
+  #file-input
+    opacity: 0
+    z-index: -1
+    position: absolute
+  button
+    cursor: pointer
+  label
+    background-color: #fcf8e3
+    margin: 0
+    cursor: pointer
+    border-radius: 4px
+    display: flex
+    align-items: center
+    padding: .46rem 1rem
+    width: 100%
+    &:hover
+      background-color: darken(#fcf8e3, 10%)
+  input[type="submit"]
+    cursor: pointer
+  .error
+    height: 13vh
+    display: flex
+    align-items: center
+  .alert
+    text-align: center
+    margin: 0 auto
+    width: 80%
+
+  .buttons-group, .input-group
+    width: 100%
+    display: flex
+    justify-content: space-between
+  .buttons-group
+    display: flex
+    justify-content: space-around
+  .input-group
+    margin-bottom: 20px
