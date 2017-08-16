@@ -5,10 +5,115 @@ import webpackConfig from '../webpack.dev.config';
 import webpackHotMiddleware from 'webpack-hot-middleware';
 import webpackMiddleware from 'webpack-dev-middleware';
 import bodyParser from 'body-parser';
-import multiparty from 'multiparty';
+
+import mongoose from 'mongoose';
+import Grid from 'gridfs-stream';
+mongoose.Promise = require('bluebird');
+
+import { writeFile, deleteFile } from './common/files';
 
 import fs from 'fs';
-import mkdirp from 'mkdirp';
+
+mongoose.connect('mongodb://localhost/web-2-0', { useMongoClient: true }, (err, db) => {
+    if(err) {
+        console.error.bind(console, 'connection error:');
+    };
+});
+let conn = mongoose.connection;
+Grid.mongo = mongoose.mongo;
+let gfs;
+
+const PORT = 3003;
+
+conn.once('open', () => {
+    console.log('--Connect to Mongo--');
+
+    gfs = Grid(conn.db);
+
+    app.post('/api/load-files', (req, res) => {
+        writeFile({ req, res, gfs });
+    });
+
+    app.post('/api/fetch-files', (req, res) => {
+        let file = gfs.files.find({}).toArray((err, files) => {
+            if(files.legnth < 1) res.end();
+            if(err) res.status(500).json({ error: 'Can\'t get files' });
+            res.json({ files })
+        });
+    });
+
+    app.post('/api/check-file', (req, res) => {
+        let { fileName, user } = req.body;
+
+        if(!user) res.status(400).json({ error: 'No user provided' });
+
+        gfs.findOne({ filename: fileName }, (err, file) => {
+            if(err) res.status(500).json({ error: 'Can\'t check file' });
+
+            if(file) {
+                res.status(400).json({ error: 'existFile' });
+            } else {
+                res.json('no such file')
+            };
+        });
+    });
+
+    app.post('/api/show-file', (req, res) => {
+        let { id, filename, userName } = req.body;
+        if(!id) res.end();
+
+        gfs.findOne({_id: id}, (err, file) => {
+            let fileType = file.contentType.split('/')[0];
+
+            if(fileType !== 'image' && fileType !== 'text' && fileType !== 'video') {
+                res.json({
+                    filename: file.filename,
+                    type: 'text/plain',
+                    file: file.filename
+                })
+            };
+            let readstream = gfs.createReadStream(file);
+            let data = [];
+            readstream.on('data', chunk => data.push(chunk));
+            readstream.on('end', () => {
+
+                if(fileType === 'image') {
+                    data = Buffer.concat(data);
+                    data = `data:${file.contentType};base64,` + Buffer(data).toString('base64');
+                    res.json({
+                        filename: file.filename,
+                        type: file.contentType,
+                        file: data
+                    })
+                } else if(fileType === 'text') {
+                    data = Buffer.concat(data);
+                    data = Buffer(data).toString()
+                    res.json({
+                        filename: file.filename,
+                        type: file.contentType,
+                        file: data
+                    })
+                } else if(fileType === 'video') {
+                    data = Buffer.concat(data);
+                    data = `data:${file.contentType};base64,` + Buffer(data).toString('base64');
+                    res.json({
+                        filename: file.filename,
+                        type: file.contentType,
+                        file: data
+                    })
+                };
+
+            })
+
+        })
+    });
+
+    app.post('/api/delete-file', (req, res) => {
+        deleteFile({ id: req.id, res, gfs })
+    });
+
+});
+
 
 const app = express();
 let compiler = webpack(webpackConfig);
@@ -21,65 +126,15 @@ app.use(webpackMiddleware(compiler, {
 app.use(webpackHotMiddleware(compiler));
 app.use(bodyParser.json());
 
-
-app.post('/api/get-files', (req, res) => {
-    let form = new multiparty.Form();
-    let user;
-
-    form.on('error', function(err) {
-        if(err.message === 'Request aborted') return;
-        res.status(400).json({error: 'Error parsing form: ' + err.stack});
-    });
-
-    form.on('part', part => {
-        if(!part.filename) part.resume();
-
-        if(!user) {
-            res.status(400).json({ error: 'No user provided' });
-        };
-        let dirname = path.join(__dirname, user);
-        fs.stat(dirname, (err, stat) => {
-            if(err) {
-                if(err.code == 'ENOENT') {
-                    fs.mkdirSync(dirname);
-                } else {
-                    res.status(500).json({ error: 'Can\'t check directory' });
-                }
-            };
-
-            let writeStream = fs.createWriteStream(path.join(dirname, part.filename));
-            part.pipe(writeStream);
-
-        });
-
-        part.on('error', err => {
-            res.status(400).json({error: 'Write error'})
-        });
-    });
-
-    form.on('field', (name, value) => {
-        if(name === 'user') {
-            user = value
-        } else {
-            res.status(400).json({ error: 'No user provided' });
-        }
-    });
-
-    form.on('close', () => {
-        res.status(200).json('success');
-    });
-
-    form.parse(req);
-
-});
-
 app.get('/*', (req, res) => {
     res.sendFile(path.join(__dirname, '/index.html'))
 });
 
+app.listen(PORT, () => console.log(`Server run on: ${PORT} port`));
 
 
-app.listen(3002, () => console.log('Server run on 3000 port'));
+
+
 
 
 

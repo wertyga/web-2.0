@@ -11,12 +11,10 @@ const App = createReactClass({
             <div>
                 <div className="App">
                     <div className="container">
-                        <FilesForm />
-                        <div className="row">
-                            <div className="col-md-6">
-                                <CloudStorage />
-                            </div>
-                        </div>
+                        <FilesForm/>
+
+                                <CloudStorage/>
+
 
                     </div>
                 </div>

@@ -1,6 +1,10 @@
 import Progress from './Progress';
 
+import { sendFiles, checkFile } from '../actions/actions';
+
 import axios from 'axios';
+import { connect } from 'react-redux';
+
 
 import '../styles/FilesForm.sass';
 
@@ -9,10 +13,18 @@ const FilesForm = createReactClass ({
     getInitialState() {
         return {
             label: '',
-            error: '',
+            error: this.props.globalError || '',
             width: 0,
             total: 0,
             loaded: 0
+        }
+    },
+
+    componentDidUpdate(prevProps, prevState) {
+        if(prevProps.globalError !== this.props.globalError) {
+            this.setState({
+                error: this.props.globalError
+            });
         }
     },
 
@@ -28,8 +40,8 @@ const FilesForm = createReactClass ({
         });
     },
 
-    onSubmit(e) {
-        e.preventDefault();
+    onSubmit() {
+        if(this.state.error) return;
         if(!this.file) {
             this.setState({
                 error: 'No files have been chosen'
@@ -37,19 +49,44 @@ const FilesForm = createReactClass ({
             return;
         };
 
+        this.formData = new FormData();
+        this.formData.append('user', 'wertyga');
+        this.formData.append('appendFile', this.file);
+
+        let fileName = this.file.name;
+        this.props.checkFile({
+            fileName,
+            user: 'wertyga'
+        })
+            .then(res => {
+                this.sendFile({ data: this.formData })
+            })
+            .catch(err => {
+                this.setState({
+                    error: err.response ? err.response.data.error : (err.request ? err.request : err.message)
+                });
+            });
+    },
+
+    cancelClick() {
+        this.source.cancel('Canceled by the user');
+        this.setState({
+            width: 0,
+            total: 0,
+            loaded: 0
+        })
+    },
+
+    sendFile(opt) {
+        this.setState({
+            error: ''
+        });
         let self = this;
-
-        let formData = new FormData();
-        formData.append('user', 'wertyga');
-        formData.append('appendFile', this.file);
-
         let cancelToken = axios.CancelToken;
         this.source = cancelToken.source();
 
-        axios({
-            method: 'post',
-            url: '/api/get-files',
-            data: formData,
+        this.props.sendFiles({
+            data: opt.data,
             onUploadProgress(e) {
                 if(self.state.error) return;
                 return self.onProgress(e)
@@ -62,6 +99,7 @@ const FilesForm = createReactClass ({
                     total: 0,
                     loaded: 0
                 });
+                this.deleteClick();
             }, 3000)
         })
             .catch(err => {
@@ -81,10 +119,6 @@ const FilesForm = createReactClass ({
                     })
                 }
             })
-    },
-
-    cancelClick() {
-        this.source.cancel('Canceled by the user')
     },
 
     labelClick() {
@@ -110,6 +144,14 @@ const FilesForm = createReactClass ({
             loaded: 0
         });
         this.file = null;
+        this.refs.input.value = '';
+    },
+
+    overwrite(e) {
+        this.setState({
+            error: ''
+        });
+        this.sendFile({ data: this.formData })
     },
 
     render() {
@@ -134,7 +176,17 @@ const FilesForm = createReactClass ({
 
                 <div className="col-12">
                     <div className="error">
-                        {this.state.error && <div className="alert alert-danger" role="alert">{this.state.error}</div>}
+                        {this.state.error &&
+                            (this.state.error === 'existFile' ?
+                                    <div className="alert alert-danger" role="alert">
+                                        <p>File exist - Overwrite ?</p>
+                                        <div className="btn btn-warning" onClick={this.overwrite}>Yes</div>
+                                        <div className="btn btn-danger" onClick={this.deleteClick}>No</div>
+                                    </div>
+                                    :
+                                    <div className="alert alert-danger" role="alert">{this.state.error}</div>
+                            )
+                        }
                     </div>
                     <Progress
                         width={this.state.width}
@@ -150,4 +202,10 @@ const FilesForm = createReactClass ({
     }
 });
 
-export default FilesForm;
+function mapState(state) {
+    return {
+        globalError: state.globalError
+    }
+};
+
+export default connect(mapState, { sendFiles, checkFile })(FilesForm);
