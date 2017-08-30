@@ -90,7 +90,6 @@ export default function(self) {
                     loaded: 0
                 })
             }
-
     }
 };
 

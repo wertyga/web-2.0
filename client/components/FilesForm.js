@@ -1,14 +1,12 @@
 import Progress from './Progress';
 
 import { sendFiles, checkFile } from '../actions/actions';
-import Transport from '../common/Transport';
+import Transport from '../common/Socket';
 
 import axios from 'axios';
 import { connect } from 'react-redux';
 
 import '../styles/FilesForm.sass';
-
-
 
 
 const FilesForm = createReactClass ({
@@ -32,7 +30,7 @@ const FilesForm = createReactClass ({
     },
 
     componentDidMount() {
-        this.transport = new Transport(this).xhr;
+        this.transport = Transport(this);
     },
 
     onProgress(e) {

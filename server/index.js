@@ -24,6 +24,10 @@ Grid.mongo = mongoose.mongo;
 let gfs;
 
 const PORT = 3003;
+const app = express();
+const server = require('http').Server(app);
+let io = require('socket.io')(server);
+server.listen(PORT, () => console.log(`Server run on: ${PORT} port`));
 
 conn.once('open', () => {
     console.log('--Connect to Mongo--');
@@ -112,10 +116,20 @@ conn.once('open', () => {
         deleteFile({ id: req.id, res, gfs })
     });
 
+
+    io.on('connection', socket => {
+        console.log('connect new client');
+
+        socket.on('submit', data => {
+            console.log(data)
+        });
+    });
+
 });
 
 
-const app = express();
+
+
 let compiler = webpack(webpackConfig);
 
 app.use(webpackMiddleware(compiler, {
@@ -130,7 +144,10 @@ app.get('/*', (req, res) => {
     res.sendFile(path.join(__dirname, '/index.html'))
 });
 
-app.listen(PORT, () => console.log(`Server run on: ${PORT} port`));
+
+
+
+
 
 
 
