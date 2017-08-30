@@ -1,12 +1,15 @@
 import Progress from './Progress';
 
 import { sendFiles, checkFile } from '../actions/actions';
+import Transport from '../common/Transport';
 
 import axios from 'axios';
 import { connect } from 'react-redux';
 
-
 import '../styles/FilesForm.sass';
+
+
+
 
 const FilesForm = createReactClass ({
     
@@ -28,6 +31,10 @@ const FilesForm = createReactClass ({
         }
     },
 
+    componentDidMount() {
+        this.transport = new Transport(this).xhr;
+    },
+
     onProgress(e) {
         if(this.state.error) return;
         let total = e.total,
@@ -41,85 +48,87 @@ const FilesForm = createReactClass ({
     },
 
     onSubmit() {
-        if(this.state.error) return;
-        if(!this.file) {
-            this.setState({
-                error: 'No files have been chosen'
-            });
-            return;
-        };
-
-        this.formData = new FormData();
-        this.formData.append('user', 'wertyga');
-        this.formData.append('appendFile', this.file);
-
-        let fileName = this.file.name;
-        this.props.checkFile({
-            fileName,
-            user: 'wertyga'
-        })
-            .then(res => {
-                this.sendFile({ data: this.formData })
-            })
-            .catch(err => {
-                this.setState({
-                    error: err.response ? err.response.data.error : (err.request ? err.request : err.message)
-                });
-            });
+        this.transport.onSubmit();
+        // if(this.state.error) return;
+        // if(!this.file) {
+        //     this.setState({
+        //         error: 'No files have been chosen'
+        //     });
+        //     return;
+        // };
+        //
+        // this.formData = new FormData();
+        // this.formData.append('user', 'wertyga');
+        // this.formData.append('appendFile', this.file);
+        //
+        // let fileName = this.file.name;
+        // this.props.checkFile({
+        //     fileName,
+        //     user: 'wertyga'
+        // })
+        //     .then(res => {
+        //         this.sendFile({ data: this.formData })
+        //     })
+        //     .catch(err => {
+        //         this.setState({
+        //             error: err.response ? err.response.data.error : (err.request ? err.request : err.message)
+        //         });
+        //     });
     },
 
     cancelClick() {
-        this.source.cancel('Canceled by the user');
-        this.setState({
-            width: 0,
-            total: 0,
-            loaded: 0
-        })
+        this.transport.cancel();
+        // this.source.cancel('Canceled by the user');
+        // this.setState({
+        //     width: 0,
+        //     total: 0,
+        //     loaded: 0
+        // })
     },
 
-    sendFile(opt) {
-        this.setState({
-            error: ''
-        });
-        let self = this;
-        let cancelToken = axios.CancelToken;
-        this.source = cancelToken.source();
-
-        this.props.sendFiles({
-            data: opt.data,
-            onUploadProgress(e) {
-                if(self.state.error) return;
-                return self.onProgress(e)
-            },
-            cancelToken: this.source.token
-        }).then(res => {
-            setTimeout(() => {
-                this.setState({
-                    width: 0,
-                    total: 0,
-                    loaded: 0
-                });
-                this.deleteClick();
-            }, 3000)
-        })
-            .catch(err => {
-                if(axios.isCancel(err)) {
-                    this.setState({
-                        error: err.message,
-                        width: 0,
-                        total: 0,
-                        loaded: 0
-                    });
-                } else {
-                    this.setState({
-                        error: err.response ? err.response.data.error : (err.request ? err.request : err.message),
-                        width: 0,
-                        total: 0,
-                        loaded: 0
-                    })
-                }
-            })
-    },
+    // sendFile(opt) {
+    //     this.setState({
+    //         error: ''
+    //     });
+    //     let self = this;
+    //     let cancelToken = axios.CancelToken;
+    //     this.source = cancelToken.source();
+    //
+    //     this.props.sendFiles({
+    //         data: opt.data,
+    //         onUploadProgress(e) {
+    //             if(self.state.error) return;
+    //             return self.onProgress(e)
+    //         },
+    //         cancelToken: this.source.token
+    //     }).then(res => {
+    //         setTimeout(() => {
+    //             this.setState({
+    //                 width: 0,
+    //                 total: 0,
+    //                 loaded: 0
+    //             });
+    //             this.deleteClick();
+    //         }, 3000)
+    //     })
+    //         .catch(err => {
+    //             if(axios.isCancel(err)) {
+    //                 this.setState({
+    //                     error: err.message,
+    //                     width: 0,
+    //                     total: 0,
+    //                     loaded: 0
+    //                 });
+    //             } else {
+    //                 this.setState({
+    //                     error: err.response ? err.response.data.error : (err.request ? err.request : err.message),
+    //                     width: 0,
+    //                     total: 0,
+    //                     loaded: 0
+    //                 })
+    //             }
+    //         })
+    // },
 
     labelClick() {
         this.file = this.refs.input.files[0];
@@ -148,10 +157,11 @@ const FilesForm = createReactClass ({
     },
 
     overwrite(e) {
-        this.setState({
-            error: ''
-        });
-        this.sendFile({ data: this.formData })
+        this.transport.overwrite();
+        // this.setState({
+        //     error: ''
+        // });
+        // this.sendFile({ data: this.formData })
     },
 
     render() {
