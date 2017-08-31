@@ -23,7 +23,7 @@ let conn = mongoose.connection;
 Grid.mongo = mongoose.mongo;
 let gfs;
 
-const PORT = 3003;
+const PORT = 3000;
 const app = express();
 const server = require('http').Server(app);
 let io = require('socket.io')(server);
@@ -69,60 +69,38 @@ conn.once('open', () => {
         gfs.findOne({_id: id}, (err, file) => {
             let fileType = file.contentType.split('/')[0];
 
-            if(fileType !== 'image' && fileType !== 'text' && fileType !== 'video') {
-                res.json({
-                    filename: file.filename,
-                    type: 'text/plain',
-                    file: file.filename
-                })
-            };
-            let readstream = gfs.createReadStream(file);
-            let data = [];
-            readstream.on('data', chunk => data.push(chunk));
-            readstream.on('end', () => {
+                if(fileType === 'image' || fileType === 'text') {
+                    let readstream = gfs.createReadStream(file);
+                    let data = [];
+                    readstream.on('data', chunk => data.push(chunk));
+                    readstream.on('end', () => {
+                        data = Buffer.concat(data);
+                        data = (fileType === 'image' ?
+                            `data:${file.contentType};base64,` + Buffer(data).toString('base64') : Buffer(data).toString());
+                        res.json({
+                            filename: file.filename,
+                            type: file.contentType,
+                            file: data,
+                            description: file
+                        })
+                    });
 
-                if(fileType === 'image') {
-                    data = Buffer.concat(data);
-                    data = `data:${file.contentType};base64,` + Buffer(data).toString('base64');
+                } else {
                     res.json({
                         filename: file.filename,
                         type: file.contentType,
-                        file: data
+                        file: file.filename,
+                        description: file
                     })
-                } else if(fileType === 'text') {
-                    data = Buffer.concat(data);
-                    data = Buffer(data).toString()
-                    res.json({
-                        filename: file.filename,
-                        type: file.contentType,
-                        file: data
-                    })
-                } else if(fileType === 'video') {
-                    data = Buffer.concat(data);
-                    data = `data:${file.contentType};base64,` + Buffer(data).toString('base64');
-                    res.json({
-                        filename: file.filename,
-                        type: file.contentType,
-                        file: data
-                    })
-                };
 
-            })
+                }
 
         })
     });
 
     app.post('/api/delete-file', (req, res) => {
-        deleteFile({ id: req.id, res, gfs })
-    });
-
-
-    io.on('connection', socket => {
-        console.log('connect new client');
-
-        socket.on('submit', data => {
-            console.log(data)
-        });
+        deleteFile({ gfs, res, id: req.body.id })
+            .then(resp => res.json('success delete'));
     });
 
 });
