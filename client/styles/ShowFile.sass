@@ -1,10 +1,28 @@
 .ShowFile
-  overflow: auto
+  padding: 0 20px 20px 20px
+  overflow: scroll
+  overflow-wrap: break-word
+  text-align: center
   height: 50vh
+  .description
+    text-align: left
+    margin-top: 30px
+    position: relative
+    &:before
+      position: relative
+      content: ''
+      top: 0
+      height: 1px
+      width: 80%
+      display: block
+      background-color: #fff
+      transform: translateX(15%)
+      margin-bottom: 30px
+
   p
     color: #fff
-    height: 100%
-    width: 100%
+    //height: 100%
+    //width: 100%
   img
     width: 100%
   video

@@ -1,0 +1,12 @@
+body {
+	background-color: #fff;
+	margin: 0;
+	padding: 0;
+	color: #000;
+	font-family: 'DroidSerif', sans-serif;
+}
+a, a:hover, a:active, a:focus {
+	color: #F2F2F2;
+	text-decoration: none;
+}
+

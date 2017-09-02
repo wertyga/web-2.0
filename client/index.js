@@ -19,6 +19,8 @@ const store = createStore(
     )
 );
 
+window.user = 'wertyga'
+
 ReactDOM.render (
     <BrowserRouter>
         <Provider store={store}>

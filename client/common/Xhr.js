@@ -4,26 +4,17 @@ import axios from 'axios';
 export default function(self) {
     return {
         onSubmit() {
-                if (self.state.error) return;
-                if (!self.file) {
-                    self.setState({
-                        error: 'No files have been chosen'
-                    });
-                    return;
-                }
-                ;
-
                 this.formData = new FormData();
-                this.formData.append('user', 'wertyga');
+                this.formData.append('user', user);
                 this.formData.append('appendFile', self.file);
 
                 let fileName = self.file.name;
                 self.props.checkFile({
                     fileName,
-                    user: 'wertyga'
+                    user
                 })
                     .then(res => {
-                        this.sendFile({data: this.formData})
+                        this._sendFile({data: this.formData})
                     })
                     .catch(err => {
                         self.setState({
@@ -32,20 +23,19 @@ export default function(self) {
                     });
             },
 
-        sendFile(opt) {
+        _sendFile(opt) {
                 self.setState({
                     error: ''
                 });
                 let cancelToken = axios.CancelToken;
-                this.source = cancelToken.source();
-
+                this._source = cancelToken.source();
                 self.props.sendFiles({
                     data: opt.data,
                     onUploadProgress(e) {
                         if (self.state.error) return;
                         return self.onProgress(e)
                     },
-                    cancelToken: this.source.token
+                    cancelToken: this._source.token
                 }).then(res => {
                     setTimeout(() => {
                         self.setState({
@@ -79,11 +69,11 @@ export default function(self) {
                 self.setState({
                     error: ''
                 });
-                this.sendFile({data: this.formData})
+                this._sendFile({data: this.formData})
             },
 
         cancel() {
-                this.source.cancel('Canceled by the user');
+                this._source.cancel('Canceled by the user');
                 self.setState({
                     width: 0,
                     total: 0,

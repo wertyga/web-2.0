@@ -1,7 +1,7 @@
 import Progress from './Progress';
 
 import { sendFiles, checkFile } from '../actions/actions';
-import Transport from '../common/Socket';
+import Transport from '../common/Xhr';
 
 import axios from 'axios';
 import { connect } from 'react-redux';
@@ -212,7 +212,7 @@ const FilesForm = createReactClass ({
 
 function mapState(state) {
     return {
-        globalError: state.globalError
+        // globalError: state.globalError
     }
 };
 
