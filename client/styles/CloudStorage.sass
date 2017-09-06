@@ -22,9 +22,21 @@
       display: block
       padding: 5px 10px
       cursor: pointer
+      p
+        margin: 0
+      &.showRename
+        & > .Rename
+          display: block
+        & > p
+          display: none
       &:hover
         background-color: #4b5257
         color: #fff
+      &.rename
+        p
+          display: none
+        .Rename
+          display: block
   .error
     color: #7c0200
     text-transform: uppercase

@@ -1,9 +1,10 @@
 import { connect } from 'react-redux';
 
-import { getFiles, sendGlobalError, showFile, deleteFile } from '../actions/actions';
+import { getFiles, sendGlobalError, showFile, deleteFile, changeFileName } from '../actions/actions';
 
 import ShowFile from './ShowFile';
 import DropdownMenu from './DropdownMenu';
+import Rename from './Rename';
 
 import '../styles/CloudStorage.sass';
 
@@ -19,6 +20,9 @@ const CloudStorage = createReactClass({
                 x: 0,
                 y: 0,
                 target: ''
+            },
+            rename: {
+                show: false
             }
         }
     },
@@ -57,11 +61,14 @@ const CloudStorage = createReactClass({
 
     onFileClick(e) {
         e.preventDefault();
+        if(this.renameTarget) {
+            this.cancelRenameFile();
+        };
 
         this.hideDropMenu();
 
-        let type = e.target.getAttribute('data');
-        let id = e.target.getAttribute('id');
+        let type = e.currentTarget.getAttribute('data');
+        let id = e.currentTarget.getAttribute('id');
         let filename = e.target.innerText;
 
         if(this.state.showFile.filename === filename) return;
@@ -92,7 +99,7 @@ const CloudStorage = createReactClass({
                 show: false,
                 x: 0,
                 y: 0,
-                target: ''
+                target: this.state.dropMenu.target
             }
         });
     },
@@ -107,11 +114,13 @@ const CloudStorage = createReactClass({
                 x,
                 y,
                 target: {
-                    id: e.target.getAttribute('id'),
+                    id: e.currentTarget.getAttribute('id'),
                     filename: e.target.innerText
                 }
-            }
+            },
+            rename: false
         });
+        this.cancelRenameFile();
 
         document.body.addEventListener('click', e => {
             if(e.target.nodeName === 'LI') return;
@@ -132,6 +141,43 @@ const CloudStorage = createReactClass({
         this.hideDropMenu();
     },
 
+    renameFile() {
+        if(this.renameTarget) {
+            this.renameTarget.classList.remove('showRename');
+        };
+        this.renameTarget = document.getElementById(this.state.dropMenu.target.id);
+        this.renameTarget.classList.add('showRename');
+        this.hideDropMenu();
+        this.setState({
+            rename: true
+        });
+        if(this.state.showFile) {
+            this.setState({
+                showFile: {}
+            })
+        };
+    },
+
+    cancelRenameFile() {
+        if(this.renameTarget) {
+            this.renameTarget.classList.remove('showRename');
+            this.renameTarget = null;
+            this.setState({
+                rename: false
+            });
+        }
+    },
+
+    changeFileName(filename) {
+        let id = this.state.dropMenu.target.filename;
+        if(filename === this.state.dropMenu.target.filename) {
+            this.cancelRenameFile();
+            return;
+        };
+        this.props.changeFileName({ id, filename })
+            .then(() => this.cancelRenameFile());
+    },
+
     render() {
         return (
             <div id="CloudStorage" ref="main">
@@ -147,7 +193,17 @@ const CloudStorage = createReactClass({
                                         ref="li"
                                         id={file._id}
                                         data={file.contentType}
-                                        key={i}>{file.filename}</li>)
+                                        key={i}>
+
+                                        <p className={this.state.rename.show && 'hide'}>{file.filename}</p>
+                                        <Rename
+                                            value={this.state.dropMenu.target.filename}
+                                            show={this.state.rename}
+                                            cancelRenameFile={this.cancelRenameFile}
+                                            changeFileName={this.changeFileName}
+                                        />
+                                    </li>
+                                )
                                 }
                             </ul>
                         }
@@ -156,6 +212,7 @@ const CloudStorage = createReactClass({
                             x={this.state.dropMenu.x}
                             y={this.state.dropMenu.y}
                             deleteFile={this.deleteFile}
+                            renameFile={this.renameFile}
                         />
                         }
                     </div>
@@ -184,4 +241,4 @@ function mapState(state) {
     }
 };
 
-export default connect(mapState, { getFiles, sendGlobalError, showFile, deleteFile })(CloudStorage);
+export default connect(mapState, { getFiles, sendGlobalError, showFile, deleteFile, changeFileName })(CloudStorage);

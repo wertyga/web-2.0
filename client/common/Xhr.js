@@ -3,25 +3,36 @@ import axios from 'axios';
 
 export default function(self) {
     return {
-        onSubmit() {
-                this.formData = new FormData();
-                this.formData.append('user', user);
-                this.formData.append('appendFile', self.file);
+        onSubmit(user) {
+            if (self.state.error) return;
+            if (!self.files) {
+                self.setState({
+                    error: 'No files have been chosen'
+                });
+                return;
+            }
+            ;
 
-                let fileName = self.file.name;
-                self.props.checkFile({
-                    fileName,
-                    user
+            this.formData = new FormData();
+            this.formData.append('user', user);
+
+            for(let i = 0; i < self.files.length; i++) {
+                this.formData.append(`appendFile-${i}`, self.files[i]);
+            };
+
+            self.props.checkFile({
+                fileNames: self.fileNames,
+                user
+            })
+                .then(res => {
+                    this._sendFile({data: this.formData})
                 })
-                    .then(res => {
-                        this._sendFile({data: this.formData})
-                    })
-                    .catch(err => {
-                        self.setState({
-                            error: err.response ? err.response.data.error : (err.request ? err.request : err.message)
-                        });
+                .catch(err => {
+                    self.setState({
+                        error: err.response ? err.response.data.error : (err.request ? err.request : err.message)
                     });
-            },
+                });
+        },
 
         _sendFile(opt) {
                 self.setState({
@@ -78,7 +89,8 @@ export default function(self) {
                     width: 0,
                     total: 0,
                     loaded: 0
-                })
+                });
+            self.deleteClick();
             }
     }
 };

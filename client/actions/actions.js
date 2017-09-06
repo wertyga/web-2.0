@@ -3,7 +3,8 @@ import axios from 'axios';
 export const SET_FILES = 'SET_FILES';
 export const GLOBAL_ERROR = 'GLOBAL_ERROR';
 export const DELETE_FILE = 'DELETE_FILE';
-export const ADD_FILE = 'ADD_FILE';
+export const ADD_FILES = 'ADD_FILES';
+export const RENAME_FILE = 'RENAME_FILE';
 
 export function checkFile(opt) {
     return dispatch => {
@@ -11,15 +12,15 @@ export function checkFile(opt) {
     }
 };
 
-export function sendFiles(file) {
+export function sendFiles(files) {
     return dispatch => {
-        return axios(Object.assign(file, { method: 'post', url: '/api/load-files'})).then(res => dispatch(addFile(res.data)))
+        return axios(Object.assign(files, { method: 'post', url: '/api/load-files'})).then(res => dispatch(addFile(res.data.files)))
     }
 };
-function addFile(file) {
+function addFile(files) {
     return {
-        type: ADD_FILE,
-        file
+        type: ADD_FILES,
+        files
     }
 };
 
@@ -67,3 +68,20 @@ function fileDelete(filename) {
         filename
     }
 };
+
+export function changeFileName(props) {
+    return dispatch => {
+        return axios.post('/api/change-file', { ...props })
+            .then(res => dispatch(renameFile(res.data, props.id)))
+            .catch(err => dispatch(globalError(err.response ? err.response.data : err.message)))
+    }
+};
+function renameFile(newFile, lastName) {
+    return {
+        type: RENAME_FILE,
+        file: {
+            newFile,
+            lastName
+        }
+    }
+}

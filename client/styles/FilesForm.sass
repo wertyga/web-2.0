@@ -16,12 +16,19 @@
     align-items: center
     padding: .46rem 1rem
     width: 100%
+    max-height: 40px
+    overflow: hidden
+    text-overflow: ellipsis
     &:hover
       background-color: darken(#fcf8e3, 10%)
+    span
+      height: 100%
+
+
   input[type="submit"]
     cursor: pointer
   .error
-    height: 13vh
+    //height: 13vh
     display: flex
     align-items: center
     .btn
