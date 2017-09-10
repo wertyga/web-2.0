@@ -13,8 +13,9 @@ mongoose.Promise = require('bluebird');
 import { writeFile, deleteFile } from './common/files';
 
 import fs from 'fs';
+const zlib = require('zlib');
 
-const PORT = 3001;
+const PORT = 3000;
 const app = express();
 const server = require('http').Server(app);
 
@@ -28,7 +29,7 @@ let conn = mongoose.connection;
 Grid.mongo = mongoose.mongo;
 let gfs;
 
-server.listen(PORT, () => console.log(`Server run on: ${PORT} port`));
+app.listen(PORT, () => console.log(`Server run on: ${PORT} port`));
 
 let compiler = webpack(webpackConfig);
 
@@ -136,8 +137,26 @@ conn.once('open', () => {
         });
     });
 
+
+
+});
+
+
+app.get('/download', (req, res) => {
+    const { filename, user, type } = req.query;
+
+    const readStream = gfs.createReadStream({filename});
+    res.set({
+        'Content-Disposition': `attachment; filename="${filename}"`,
+        'Content-Type': type
+    });
+
+    readStream.pipe(res)
 });
 
 app.get('/*', (req, res) => {
-    res.sendFile(path.join(__dirname, '/index.html'))
+    res.sendFile(path.join(__dirname, 'index.html'))
 });
+
+
+
