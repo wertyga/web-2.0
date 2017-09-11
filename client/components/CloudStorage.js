@@ -1,6 +1,6 @@
 import { connect } from 'react-redux';
 
-import { getFiles, sendGlobalError, showFile, deleteFile, changeFileName } from '../actions/actions';
+import { getFiles, sendGlobalError, showFile, deleteFile, changeFileName, download } from '../actions/actions';
 
 import ShowFile from './ShowFile';
 import DropdownMenu from './DropdownMenu';
@@ -115,6 +115,7 @@ const CloudStorage = createReactClass({
                 y,
                 target: {
                     id: e.currentTarget.getAttribute('id'),
+                    type: e.currentTarget.getAttribute('data'),
                     filename: e.target.innerText
                 }
             },
@@ -178,6 +179,11 @@ const CloudStorage = createReactClass({
             .then(() => this.cancelRenameFile());
     },
 
+    downloadFile() {
+        this.hideDropMenu();
+        download(this.state.dropMenu.target.filename, user, this.state.dropMenu.target.type)
+    },
+
     render() {
         return (
             <div id="CloudStorage" ref="main">
@@ -213,6 +219,7 @@ const CloudStorage = createReactClass({
                             y={this.state.dropMenu.y}
                             deleteFile={this.deleteFile}
                             renameFile={this.renameFile}
+                            downloadFile={this.downloadFile}
                         />
                         }
                     </div>

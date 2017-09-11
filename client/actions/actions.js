@@ -85,3 +85,7 @@ function renameFile(newFile, lastName) {
         }
     }
 }
+
+export function download(filename, user, type) {
+    window.location.href = `/download?filename=${filename}&user=${user}&type=${type}`
+};

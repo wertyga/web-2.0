@@ -14,9 +14,9 @@ import { writeFile, deleteFile } from './common/files';
 
 import fs from 'fs';
 
-const PORT = 3001;
+const PORT = 3000;
 const app = express();
-const server = require('http').Server(app);
+// const server = require('http').Server(app);
 
 mongoose.connect('mongodb://localhost/web-2-0', { useMongoClient: true }, (err, db) => {
     if(err) {
@@ -28,7 +28,7 @@ let conn = mongoose.connection;
 Grid.mongo = mongoose.mongo;
 let gfs;
 
-server.listen(PORT, () => console.log(`Server run on: ${PORT} port`));
+app.listen(PORT, () => console.log(`Server run on: ${PORT} port`));
 
 let compiler = webpack(webpackConfig);
 
@@ -138,6 +138,21 @@ conn.once('open', () => {
 
 });
 
+
+app.get('/download', (req, res) => {
+    const { filename, user, type } = req.query;
+
+    const readStream = gfs.createReadStream({filename});
+    res.set({
+        'Content-Disposition': `attachment; filename="${filename}"`,
+        'Content-Type': type
+    });
+
+    readStream.pipe(res)
+});
 app.get('/*', (req, res) => {
     res.sendFile(path.join(__dirname, '/index.html'))
 });
+
+
+

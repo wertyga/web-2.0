@@ -104,7 +104,15 @@ const FilesForm = createReactClass ({
                         {this.state.error &&
                         (this.state.error.existFile ?
                                 <div className="alert alert-danger" role="alert">
-                                    <p>Files exist: {this.state.error.files.join(' AND ')} - Overwrite ?</p>
+                                    <p>Files exist - Overwrite ?</p>
+                                    <ul>
+                                        {this.state.error.files.map((file, i) => {
+                                            return (
+                                                <li style={{ display: 'block' }} key={i}>{file}</li>
+                                            );
+                                        })}
+                                    </ul>
+
                                     <div className="btn btn-warning" onClick={this.overwrite}>Yes</div>
                                     <div className="btn btn-danger" onClick={this.deleteClick}>No</div>
                                 </div>

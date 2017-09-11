@@ -55,7 +55,7 @@ export default function(self) {
                             loaded: 0
                         });
                         self.deleteClick();
-                    }, 3000)
+                    }, 1000)
                 })
                     .catch(err => {
                         if (axios.isCancel(err)) {
