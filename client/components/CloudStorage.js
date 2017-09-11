@@ -115,13 +115,8 @@ const CloudStorage = createReactClass({
                 y,
                 target: {
                     id: e.currentTarget.getAttribute('id'),
-<<<<<<< HEAD
                     type: e.currentTarget.getAttribute('data'),
                     filename: e.target.innerText
-=======
-                    filename: e.target.innerText,
-                    type: e.currentTarget.getAttribute('data')
->>>>>>> 03370f4deb76da27deff93f784ee2d21c7f2cb05
                 }
             },
             rename: false
@@ -187,10 +182,6 @@ const CloudStorage = createReactClass({
     downloadFile() {
         this.hideDropMenu();
         download(this.state.dropMenu.target.filename, user, this.state.dropMenu.target.type)
-<<<<<<< HEAD
-=======
-
->>>>>>> 03370f4deb76da27deff93f784ee2d21c7f2cb05
     },
 
     render() {
