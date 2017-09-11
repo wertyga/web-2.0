@@ -87,5 +87,10 @@ function renameFile(newFile, lastName) {
 }
 
 export function download(filename, user, type) {
+<<<<<<< HEAD
+=======
+    // return axios.get('/download', {params: { id: id }})
+    // return axios.post('/download', {id})
+>>>>>>> 03370f4deb76da27deff93f784ee2d21c7f2cb05
     window.location.href = `/download?filename=${filename}&user=${user}&type=${type}`
 };

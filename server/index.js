@@ -13,6 +13,7 @@ mongoose.Promise = require('bluebird');
 import { writeFile, deleteFile } from './common/files';
 
 import fs from 'fs';
+const zlib = require('zlib');
 
 const PORT = 3000;
 const app = express();
@@ -136,6 +137,21 @@ conn.once('open', () => {
         });
     });
 
+
+
+});
+
+
+app.get('/download', (req, res) => {
+    const { filename, user, type } = req.query;
+
+    const readStream = gfs.createReadStream({filename});
+    res.set({
+        'Content-Disposition': `attachment; filename="${filename}"`,
+        'Content-Type': type
+    });
+
+    readStream.pipe(res)
 });
 
 
